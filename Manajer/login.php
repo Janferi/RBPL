@@ -1,4 +1,5 @@
 <?php
+require_once '../security_headers.php';
 session_start();
 include 'koneksi.php';
 
@@ -9,31 +10,38 @@ if (isset($_SESSION['username'])) {
 
 $error = "";
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $username = trim($_POST['username']);
-    $password = trim($_POST['password']);
+    // Validasi CSRF token
+    if (!csrf_validate_token()) {
+        $error = "Security token tidak valid. Silakan refresh halaman.";
+    } else {
+        $username = sanitize_input(trim($_POST['username']));
+        $password = trim($_POST['password']);
 
-    // Prepared statement untuk mencegah SQL Injection
-    $stmt = mysqli_prepare($koneksi, "SELECT * FROM manajer WHERE username = ?");
-    mysqli_stmt_bind_param($stmt, "s", $username);
-    mysqli_stmt_execute($stmt);
-    $result = mysqli_stmt_get_result($stmt);
+        // Prepared statement untuk mencegah SQL Injection
+        $stmt = mysqli_prepare($koneksi, "SELECT * FROM manajer WHERE username = ?");
+        mysqli_stmt_bind_param($stmt, "s", $username);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
 
-    if (mysqli_num_rows($result) == 1) {
-        $row = mysqli_fetch_assoc($result);
-        // Verifikasi password
-        if ($row['password'] === $password) {
-            $_SESSION['username'] = $row['username'];
-            $_SESSION['id_manajer'] = $row['id'];
-            mysqli_stmt_close($stmt);
-            header("Location: halamanoption.php");
-            exit();
+        if (mysqli_num_rows($result) == 1) {
+            $row = mysqli_fetch_assoc($result);
+            // Verifikasi password
+            if ($row['password'] === $password) {
+                // Regenerate session ID untuk mencegah session fixation
+                secure_session_regenerate();
+                $_SESSION['username'] = $row['username'];
+                $_SESSION['id_manajer'] = $row['id'];
+                mysqli_stmt_close($stmt);
+                header("Location: halamanoption.php");
+                exit();
+            } else {
+                $error = "Username atau password salah!";
+            }
         } else {
             $error = "Username atau password salah!";
         }
-    } else {
-        $error = "Username atau password salah!";
+        mysqli_stmt_close($stmt);
     }
-    mysqli_stmt_close($stmt);
 }
 ?>
 <!DOCTYPE html>
@@ -93,6 +101,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <?php endif; ?>
 
             <form method="POST" action="" id="loginForm" class="space-y-6">
+                <?php echo csrf_token_field(); ?>
                 <div>
                     <input type="text" name="username" placeholder="Username" required
                         class="w-full bg-cruz-cream border border-gray-200 text-cruz-charcoal placeholder-gray-400 px-4 py-4 text-sm tracking-wide focus:outline-none focus:border-cruz-gold transition">

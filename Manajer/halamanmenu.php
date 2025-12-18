@@ -1,4 +1,5 @@
 <?php
+require_once '../security_headers.php';
 session_start();
 include 'koneksi.php';
 
@@ -7,7 +8,7 @@ if (!isset($_SESSION['username'])) {
     exit();
 }
 if (isset($_GET['logout'])) {
-    session_destroy();
+    secure_session_destroy();
     header("Location: login.php");
     exit();
 }
@@ -142,7 +143,8 @@ $username = $_SESSION['username'];
                         <div class="p-6 text-center">
                             <h3 class="text-lg font-serif text-cruz-black mb-1"><?= htmlspecialchars($row['nama']) ?></h3>
                             <p class="text-cruz-gold font-light text-sm mb-4">IDR
-                                <?= number_format($row['harga'], 0, ',', '.') ?></p>
+                                <?= number_format($row['harga'], 0, ',', '.') ?>
+                            </p>
 
                             <div class="flex justify-center gap-3">
                                 <a href="detailEdit.php?id=<?= $row['id'] ?>"

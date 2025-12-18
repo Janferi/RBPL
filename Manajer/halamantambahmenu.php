@@ -1,4 +1,5 @@
 <?php
+require_once '../security_headers.php';
 session_start();
 
 // Cek apakah user sudah login sebagai manajer

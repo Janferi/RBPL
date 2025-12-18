@@ -1,4 +1,5 @@
 <?php
+require_once '../security_headers.php';
 // Koneksi ke database
 include 'koneksi.php';
 // Inisialisasi session

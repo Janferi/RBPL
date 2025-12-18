@@ -1,4 +1,5 @@
 <?php
+require_once '../security_headers.php';
 include 'koneksi.php';
 session_start();
 if (!isset($_SESSION['keranjang']) || empty($_SESSION['keranjang']) || !isset($_SESSION['payment_method'])) {
@@ -76,16 +77,19 @@ function simpanPesanan($koneksi, $total_harga, $payment_method, $keranjang)
 }
 
 if (isset($_POST['confirm_payment'])) {
-    $id = simpanPesanan($koneksi, $total_harga, $payment_name, $_SESSION['keranjang']);
-    if ($id) {
-        $_SESSION['id_pesanan'] = $id;
-        $_SESSION['payment_method_name'] = $payment_name;
-        $_SESSION['payment_date'] = date('d F Y');
-        $_SESSION['purchased_items'] = []; // populate if needed for invoice, skipping for brevity
-        $_SESSION['keranjang'] = [];
-        unset($_SESSION['payment_method']);
-        header("Location: order.php"); // Redirect to order list instead of invoice directly for better flow
-        exit();
+    // Validasi CSRF token
+    if (csrf_validate_token()) {
+        $id = simpanPesanan($koneksi, $total_harga, $payment_name, $_SESSION['keranjang']);
+        if ($id) {
+            $_SESSION['id_pesanan'] = $id;
+            $_SESSION['payment_method_name'] = $payment_name;
+            $_SESSION['payment_date'] = date('d F Y');
+            $_SESSION['purchased_items'] = [];
+            $_SESSION['keranjang'] = [];
+            unset($_SESSION['payment_method']);
+            header("Location: order.php");
+            exit();
+        }
     }
 }
 ?>
@@ -169,6 +173,7 @@ if (isset($_POST['confirm_payment'])) {
             </div>
 
             <form method="post">
+                <?php echo csrf_token_field(); ?>
                 <button type="submit" name="confirm_payment"
                     class="w-full bg-cruz-charcoal text-white py-4 text-xs uppercase tracking-[0.2em] hover:bg-cruz-gold transition duration-500 shadow-xl">
                     I Have Paid

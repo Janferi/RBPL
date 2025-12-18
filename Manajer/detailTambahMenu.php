@@ -1,4 +1,5 @@
 <?php
+require_once '../security_headers.php';
 session_start();
 include 'koneksi.php';
 
@@ -7,7 +8,7 @@ if (!isset($_SESSION['username'])) {
     exit();
 }
 if (isset($_GET['logout'])) {
-    session_destroy();
+    secure_session_destroy();
     header("Location: login.php");
     exit();
 }
@@ -16,7 +17,10 @@ $success = "";
 $error = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    if (empty($_POST['nama']) || empty($_POST['category']) || empty($_POST['harga']) || empty($_POST['deskripsi'])) {
+    // Validasi CSRF token
+    if (!csrf_validate_token()) {
+        $error = "Security token tidak valid. Silakan refresh halaman.";
+    } elseif (empty($_POST['nama']) || empty($_POST['category']) || empty($_POST['harga']) || empty($_POST['deskripsi'])) {
         $error = "Semua kolom wajib diisi!";
     } else {
         $nama = mysqli_real_escape_string($koneksi, $_POST['nama']);
@@ -125,6 +129,7 @@ $username = $_SESSION['username'];
             <?php endif; ?>
 
             <form method="POST" enctype="multipart/form-data" class="space-y-6">
+                <?php echo csrf_token_field(); ?>
                 <div>
                     <label class="block text-xs uppercase tracking-widest text-gray-400 mb-2">Nama</label>
                     <input type="text" name="nama" required

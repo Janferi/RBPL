@@ -1,4 +1,5 @@
 <?php
+require_once '../security_headers.php';
 include 'koneksi.php';
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
@@ -72,6 +73,7 @@ $payment_methods = [
         </div>
 
         <form method="post" action="" id="payment-form">
+            <?php echo csrf_token_field(); ?>
             <input type="hidden" id="selected_method" name="payment_method" value="">
 
             <div class="grid grid-cols-2 md:grid-cols-3 gap-6 mb-12">

@@ -1,4 +1,5 @@
 <?php
+require_once '../security_headers.php';
 session_start();
 
 include("koneksi.php");
@@ -8,33 +9,40 @@ include("koneksi.php");
 // }
 
 if (isset($_POST["login"])) {
-    $username = trim($_POST["username"]);
-    $password = trim($_POST["password"]);
-
-    if (!empty($username) && !empty($password)) {
-        // Prepared statement untuk mencegah SQL Injection
-        $stmt = mysqli_prepare($koneksi, "SELECT * FROM staff WHERE username = ?");
-        mysqli_stmt_bind_param($stmt, "s", $username);
-        mysqli_stmt_execute($stmt);
-        $q1 = mysqli_stmt_get_result($stmt);
-
-        if (mysqli_num_rows($q1) == 1) {
-            $q2 = mysqli_fetch_array($q1);
-            if ($password === $q2["password"]) {
-                $_SESSION["login"] = true;
-                $_SESSION["staff_username"] = $username;
-                mysqli_stmt_close($stmt);
-                header("refresh:1;url=dashboard.php?login=sukses");
-                exit;
-            } else {
-                $error = "Password yang dimasukkan salah!";
-            }
-        } else {
-            $error = "Username tidak terdaftar!";
-        }
-        mysqli_stmt_close($stmt);
+    // Validasi CSRF token
+    if (!csrf_validate_token()) {
+        $error = "Security token tidak valid. Silakan refresh halaman.";
     } else {
-        $error = "Masukkan username dan password";
+        $username = sanitize_input(trim($_POST["username"]));
+        $password = trim($_POST["password"]);
+
+        if (!empty($username) && !empty($password)) {
+            // Prepared statement untuk mencegah SQL Injection
+            $stmt = mysqli_prepare($koneksi, "SELECT * FROM staff WHERE username = ?");
+            mysqli_stmt_bind_param($stmt, "s", $username);
+            mysqli_stmt_execute($stmt);
+            $q1 = mysqli_stmt_get_result($stmt);
+
+            if (mysqli_num_rows($q1) == 1) {
+                $q2 = mysqli_fetch_array($q1);
+                if ($password === $q2["password"]) {
+                    // Regenerate session ID untuk mencegah session fixation
+                    secure_session_regenerate();
+                    $_SESSION["login"] = true;
+                    $_SESSION["staff_username"] = $username;
+                    mysqli_stmt_close($stmt);
+                    header("refresh:1;url=dashboard.php?login=sukses");
+                    exit;
+                } else {
+                    $error = "Password yang dimasukkan salah!";
+                }
+            } else {
+                $error = "Username tidak terdaftar!";
+            }
+            mysqli_stmt_close($stmt);
+        } else {
+            $error = "Masukkan username dan password";
+        }
     }
 }
 ?>
@@ -98,6 +106,7 @@ if (isset($_POST["login"])) {
         <div class="form-section">
             <h1>Log In</h1>
             <form action="" method="post">
+                <?php echo csrf_token_field(); ?>
                 <input type="text" placeholder="Username" class="input-field" id="username" name="username"
                     value="<?php echo isset($username) ? htmlspecialchars($username) : ''; ?>">
                 <input type="password" placeholder="Password" class="input-field" id="password" name="password"

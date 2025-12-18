@@ -1,4 +1,5 @@
 <?php
+require_once '../security_headers.php';
 // Koneksi ke database
 include 'koneksi.php';
 // Inisialisasi session
@@ -99,9 +100,8 @@ if (!$order_id) {
             <div class="w-1/2">
                 <div class="flex justify-between mb-4 text-xs">
                     <span class="text-gray-400 uppercase tracking-widest">Subtotal</span>
-                    <span
-                        class="font-light"><?php if (isset($_SESSION['total_harga']))
-                            echo number_format($_SESSION['total_harga'], 0, ',', '.'); ?></span>
+                    <span class="font-light"><?php if (isset($_SESSION['total_harga']))
+                        echo number_format($_SESSION['total_harga'], 0, ',', '.'); ?></span>
                 </div>
                 <div class="flex justify-between text-xl font-serif text-cruz-black border-t border-gray-200 pt-4">
                     <span>Total</span>

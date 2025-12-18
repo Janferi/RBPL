@@ -1,4 +1,5 @@
 <?php
+require_once '../security_headers.php';
 // Koneksi ke database
 include 'koneksi.php';
 
@@ -14,14 +15,22 @@ if (!isset($_SESSION['keranjang'])) {
 
 // Tambah item ke keranjang
 if (isset($_POST['id_menu']) && isset($_POST['jumlah'])) {
-    $id_menu = $_POST['id_menu'];
-    $jumlah = $_POST['jumlah'];
-
-    // Cek apakah menu sudah ada di keranjang
-    if (isset($_SESSION['keranjang'][$id_menu])) {
-        $_SESSION['keranjang'][$id_menu] += $jumlah;
-    } else {
-        $_SESSION['keranjang'][$id_menu] = $jumlah;
+    // Validasi CSRF token
+    if (!csrf_validate_token()) {
+        die('Invalid security token. Please refresh the page and try again.');
+    }
+    
+    // Sanitize input
+    $id_menu = sanitize_int($_POST['id_menu']);
+    $jumlah = sanitize_int($_POST['jumlah']);
+    
+    if ($id_menu > 0 && $jumlah > 0) {
+        // Cek apakah menu sudah ada di keranjang
+        if (isset($_SESSION['keranjang'][$id_menu])) {
+            $_SESSION['keranjang'][$id_menu] += $jumlah;
+        } else {
+            $_SESSION['keranjang'][$id_menu] = $jumlah;
+        }
     }
     header("Location: keranjang.php");
     exit();

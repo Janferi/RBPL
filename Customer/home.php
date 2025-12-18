@@ -1,4 +1,5 @@
 <?php
+require_once '../security_headers.php';
 session_start();
 ?>
 <!DOCTYPE html>
@@ -150,7 +151,8 @@ session_start();
         <div class="container mx-auto px-6">
             <div class="flex flex-col md:flex-row items-center gap-16">
                 <div class="md:w-1/2">
-                    <div class="relative h-96 w-full flex items-center justify-center p-12 bg-[#F9F9F7] rounded-sm shadow-xl">
+                    <div
+                        class="relative h-96 w-full flex items-center justify-center p-12 bg-[#F9F9F7] rounded-sm shadow-xl">
                         <div
                             class="absolute -top-4 -left-4 w-full h-full border border-cruz-gold/30 rounded-sm hidden md:block pointer-events-none">
                         </div>

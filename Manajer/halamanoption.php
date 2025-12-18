@@ -1,4 +1,5 @@
 <?php
+require_once '../security_headers.php';
 session_start();
 include 'koneksi.php';
 
@@ -7,7 +8,7 @@ if (!isset($_SESSION['username'])) {
     exit();
 }
 if (isset($_GET['logout'])) {
-    session_destroy();
+    secure_session_destroy();
     header("Location: login.php");
     exit();
 }
@@ -71,7 +72,8 @@ $username = $_SESSION['username'];
         <div class="text-center mb-16">
             <span class="text-cruz-gold uppercase tracking-[0.2em] text-xs font-bold mb-4 block">Control Panel</span>
             <h1 class="text-4xl md:text-5xl font-serif text-cruz-black italic">Welcome,
-                <?= htmlspecialchars($username) ?>.</h1>
+                <?= htmlspecialchars($username) ?>.
+            </h1>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">

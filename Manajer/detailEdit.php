@@ -1,4 +1,5 @@
 <?php
+require_once '../security_headers.php';
 session_start();
 include 'koneksi.php';
 
@@ -156,6 +157,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <?php endif; ?>
 
                 <form method="POST" enctype="multipart/form-data" class="space-y-5">
+                    <?php echo csrf_token_field(); ?>
                     <div>
                         <label class="block text-[10px] uppercase tracking-widest text-gray-400 mb-1">Nama</label>
                         <input type="text" name="nama" required value="<?= htmlspecialchars($menu_data['nama']) ?>"

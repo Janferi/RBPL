@@ -1,4 +1,5 @@
 <?php
+require_once '../security_headers.php';
 include 'koneksi.php'; // Menghubungkan ke database
 
 // Pastikan id_menu tersedia di URL
@@ -109,6 +110,7 @@ if (isset($_GET['id'])) {
             </p>
 
             <form action="keranjang.php" method="POST" class="space-y-8">
+                <?php echo csrf_token_field(); ?>
                 <input type="hidden" name="id_menu" value="<?php echo $id_menu; ?>">
 
                 <!-- Quantity -->
